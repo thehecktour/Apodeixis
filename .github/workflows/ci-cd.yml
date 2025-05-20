@@ -27,7 +27,7 @@ jobs:
 
       - name: 🚀 Send deploy data for my API
         env:
-          API_URL: http://localhost:8000/deploys  # Altere para o endereço real da sua API
+          API_URL: https://patroa.onrender.com/deploys # Altere para o endereço real da sua API
         run: |
           curl -X POST $API_URL \
             -H "Content-Type: application/json" \
