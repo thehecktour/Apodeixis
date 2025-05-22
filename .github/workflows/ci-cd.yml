@@ -30,39 +30,43 @@ jobs:
           API_URL: https://patroa.onrender.com/deploys
         run: |
           JSON=$(cat <<EOF
-          {
-            "commit_hash": "${{ github.sha }}",
-            "commit_message": "${{ github.event.head_commit.message || '' }}",
-            "commit_timestamp": "${{ github.event.head_commit.timestamp || '' }}",
-            "author": "${{ github.actor }}",
-            "author_username": "${{ github.event.head_commit.author.name || '' }}",
-            "author_email": "${{ github.event.head_commit.author.email || '' }}",
-            "committer_name": "${{ github.event.head_commit.committer.name || '' }}",
-            "committer_email": "${{ github.event.head_commit.committer.email || '' }}",
-            "branch": "${{ github.ref_name }}",
-            "ref": "${{ github.ref }}",
-            "base_ref": "${{ github.base_ref || '' }}",
-            "event_name": "${{ github.event_name }}",
-            "repository": "${{ github.repository }}",
-            "repository_owner": "${{ github.repository_owner }}",
-            "repository_url": "https://github.com/${{ github.repository }}",
-            "repository_full_name": "${{ github.repository }}",
-            "workflow": "${{ github.workflow }}",
-            "workflow_job": "${{ github.job }}",
-            "workflow_run_id": "${{ github.run_id }}",
-            "workflow_run_number": "${{ github.run_number }}",
-            "workflow_url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-            "pull_request_number": "${{ github.event.pull_request.number || '' }}",
-            "pull_request_title": "${{ github.event.pull_request.title || '' }}",
-            "pull_request_user": "${{ github.event.pull_request.user.login || '' }}",
-            "pull_request_base": "${{ github.event.pull_request.base.ref || '' }}",
-            "pull_request_head": "${{ github.event.pull_request.head.ref || '' }}",
-            "deployment_status": "success",
-            "triggered_by": "${{ github.actor }}"
-          }
-          EOF
-              )
-          
-              curl -X POST "$API_URL" \
-                -H "Content-Type: application/json" \
-                -d "$JSON"
+{
+  "commit_hash": "${{ github.sha }}",
+  "commit_message": "${{ github.event.head_commit.message || '' }}",
+  "commit_timestamp": "${{ github.event.head_commit.timestamp || '' }}",
+  "author": "${{ github.actor }}",
+  "author_username": "${{ github.event.head_commit.author.name || '' }}",
+  "author_email": "${{ github.event.head_commit.author.email || '' }}",
+  "committer_name": "${{ github.event.head_commit.committer.name || '' }}",
+  "committer_email": "${{ github.event.head_commit.committer.email || '' }}",
+  "branch": "${{ github.ref_name }}",
+  "ref": "${{ github.ref }}",
+  "base_ref": "${{ github.base_ref || '' }}",
+  "event_name": "${{ github.event_name }}",
+  "repository": "${{ github.repository }}",
+  "repository_owner": "${{ github.repository_owner }}",
+  "repository_url": "https://github.com/${{ github.repository }}",
+  "repository_full_name": "${{ github.repository }}",
+  "workflow": "${{ github.workflow }}",
+  "workflow_job": "${{ github.job }}",
+  "workflow_run_id": "${{ github.run_id }}",
+  "workflow_run_number": "${{ github.run_number }}",
+  "workflow_url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+  "pull_request_number": "${{ github.event.pull_request.number || '' }}",
+  "pull_request_title": "${{ github.event.pull_request.title || '' }}",
+  "pull_request_user": "${{ github.event.pull_request.user.login || '' }}",
+  "pull_request_base": "${{ github.event.pull_request.base.ref || '' }}",
+  "pull_request_head": "${{ github.event.pull_request.head.ref || '' }}",
+  "status": "success",
+  "deployment_status": "success",
+  "triggered_by": "${{ github.actor }}"
+}
+EOF
+)
+
+          echo "Payload JSON:"
+          echo "$JSON" | jq .
+
+          curl -X POST "$API_URL" \
+            -H "Content-Type: application/json" \
+            -d "$JSON"
