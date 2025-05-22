@@ -31,6 +31,22 @@ jobs:
         run: |
           echo "Montando payload JSON com segurança via jq..."
 
+          # Variáveis numéricas que podem estar vazias ou ausentes
+          PR_NUMBER="${{ github.event.pull_request.number || 'null' }}"
+          RUN_ID="${{ github.run_id || 'null' }}"
+          RUN_NUMBER="${{ github.run_number || 'null' }}"
+
+          # Ajusta para null se vazio
+          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "null" ]; then
+            PR_NUMBER=null
+          fi
+          if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
+            RUN_ID=null
+          fi
+          if [ -z "$RUN_NUMBER" ] || [ "$RUN_NUMBER" = "null" ]; then
+            RUN_NUMBER=null
+          fi
+
           jq -n \
             --arg commit_hash "${{ github.sha }}" \
             --arg commit_message "${{ github.event.head_commit.message }}" \
@@ -50,16 +66,16 @@ jobs:
             --arg repository_full_name "${{ github.repository }}" \
             --arg workflow "${{ github.workflow }}" \
             --arg workflow_job "${{ github.job }}" \
-            --arg workflow_run_id "${{ github.run_id }}" \
-            --arg workflow_run_number "${{ github.run_number }}" \
             --arg workflow_url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-            --arg pull_request_number "${{ github.event.pull_request.number || '' }}" \
             --arg pull_request_title "${{ github.event.pull_request.title || '' }}" \
             --arg pull_request_user "${{ github.event.pull_request.user.login || '' }}" \
             --arg pull_request_base "${{ github.event.pull_request.base.ref || '' }}" \
             --arg pull_request_head "${{ github.event.pull_request.head.ref || '' }}" \
             --arg deployment_status "success" \
             --arg triggered_by "${{ github.actor }}" \
+            --argjson pull_request_number "$PR_NUMBER" \
+            --argjson workflow_run_id "$RUN_ID" \
+            --argjson workflow_run_number "$RUN_NUMBER" \
             '{
               commit_hash: $commit_hash,
               commit_message: $commit_message,
