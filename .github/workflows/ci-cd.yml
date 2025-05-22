@@ -29,57 +29,73 @@ jobs:
         env:
           API_URL: https://patroa.onrender.com/deploys
         run: |
-          echo "Montando payload JSON para a API..."
+          echo "Montando payload JSON com segurança via jq..."
 
-          commit_message="${{ github.event.head_commit.message }}"
-          commit_timestamp="${{ github.event.head_commit.timestamp }}"
-          author_name="${{ github.event.head_commit.author.name }}"
-          author_email="${{ github.event.head_commit.author.email }}"
-          committer_name="${{ github.event.head_commit.committer.name }}"
-          committer_email="${{ github.event.head_commit.committer.email }}"
-          pr_number="${{ github.event.pull_request.number }}"
-          pr_title="${{ github.event.pull_request.title }}"
-          pr_user="${{ github.event.pull_request.user.login }}"
-          pr_base="${{ github.event.pull_request.base.ref }}"
-          pr_head="${{ github.event.pull_request.head.ref }}"
+          jq -n \
+            --arg commit_hash "${{ github.sha }}" \
+            --arg commit_message "${{ github.event.head_commit.message }}" \
+            --arg commit_timestamp "${{ github.event.head_commit.timestamp }}" \
+            --arg author "${{ github.actor }}" \
+            --arg author_username "${{ github.event.head_commit.author.name }}" \
+            --arg author_email "${{ github.event.head_commit.author.email }}" \
+            --arg committer_name "${{ github.event.head_commit.committer.name }}" \
+            --arg committer_email "${{ github.event.head_commit.committer.email }}" \
+            --arg branch "${{ github.ref_name }}" \
+            --arg ref "${{ github.ref }}" \
+            --arg base_ref "${{ github.base_ref || '' }}" \
+            --arg event_name "${{ github.event_name }}" \
+            --arg repository "${{ github.repository }}" \
+            --arg repository_owner "${{ github.repository_owner }}" \
+            --arg repository_url "https://github.com/${{ github.repository }}" \
+            --arg repository_full_name "${{ github.repository }}" \
+            --arg workflow "${{ github.workflow }}" \
+            --arg workflow_job "${{ github.job }}" \
+            --arg workflow_run_id "${{ github.run_id }}" \
+            --arg workflow_run_number "${{ github.run_number }}" \
+            --arg workflow_url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --arg pull_request_number "${{ github.event.pull_request.number || '' }}" \
+            --arg pull_request_title "${{ github.event.pull_request.title || '' }}" \
+            --arg pull_request_user "${{ github.event.pull_request.user.login || '' }}" \
+            --arg pull_request_base "${{ github.event.pull_request.base.ref || '' }}" \
+            --arg pull_request_head "${{ github.event.pull_request.head.ref || '' }}" \
+            --arg deployment_status "success" \
+            --arg triggered_by "${{ github.actor }}" \
+            '{
+              commit_hash: $commit_hash,
+              commit_message: $commit_message,
+              commit_timestamp: $commit_timestamp,
+              author: $author,
+              author_username: $author_username,
+              author_email: $author_email,
+              committer_name: $committer_name,
+              committer_email: $committer_email,
+              branch: $branch,
+              ref: $ref,
+              base_ref: $base_ref,
+              event_name: $event_name,
+              repository: $repository,
+              repository_owner: $repository_owner,
+              repository_url: $repository_url,
+              repository_full_name: $repository_full_name,
+              workflow: $workflow,
+              workflow_job: $workflow_job,
+              workflow_run_id: $workflow_run_id,
+              workflow_run_number: $workflow_run_number,
+              workflow_url: $workflow_url,
+              pull_request_number: $pull_request_number,
+              pull_request_title: $pull_request_title,
+              pull_request_user: $pull_request_user,
+              pull_request_base: $pull_request_base,
+              pull_request_head: $pull_request_head,
+              deployment_status: $deployment_status,
+              status: $deployment_status,
+              triggered_by: $triggered_by
+            }' > payload.json
 
-          JSON=$(cat <<EOF
-          {
-            "commit_hash": "${{ github.sha }}",
-            "commit_message": "$commit_message",
-            "commit_timestamp": "$commit_timestamp",
-            "author": "${{ github.actor }}",
-            "author_username": "$author_name",
-            "author_email": "$author_email",
-            "committer_name": "$committer_name",
-            "committer_email": "$committer_email",
-            "branch": "${{ github.ref_name }}",
-            "ref": "${{ github.ref }}",
-            "base_ref": "${{ github.base_ref }}",
-            "event_name": "${{ github.event_name }}",
-            "repository": "${{ github.repository }}",
-            "repository_owner": "${{ github.repository_owner }}",
-            "repository_url": "https://github.com/${{ github.repository }}",
-            "repository_full_name": "${{ github.repository }}",
-            "workflow": "${{ github.workflow }}",
-            "workflow_job": "${{ github.job }}",
-            "workflow_run_id": "${{ github.run_id }}",
-            "workflow_run_number": "${{ github.run_number }}",
-            "workflow_url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-            "pull_request_number": "$pr_number",
-            "pull_request_title": "$pr_title",
-            "pull_request_user": "$pr_user",
-            "pull_request_base": "$pr_base",
-            "pull_request_head": "$pr_head",
-            "status": "success",
-            "deployment_status": "success",
-            "triggered_by": "${{ github.actor }}"
-          }
-          EOF
-          )
-                    echo "Enviando para API:"
-                    echo "$JSON" | jq .
-          
-                    curl -X POST "$API_URL" \
-                      -H "Content-Type: application/json" \
-                      -d "$JSON"
+          echo "Conteúdo da payload.json:"
+          cat payload.json | jq .
+
+          echo "Enviando para a API..."
+          curl -X POST "$API_URL" \
+            -H "Content-Type: application/json" \
+            --data @payload.json
