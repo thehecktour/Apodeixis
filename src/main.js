@@ -32,5 +32,7 @@ form.addEventListener("submit", (e) => {
 function renderList() {
   list.innerHTML = "";
   const items = apodeixis.getItems();
-  items.forEach(item => list.appendChild(createListItem(item)));
+  items.forEach((item, index) => {
+    list.appendChild(createListItem(item, index));
+  });
 }

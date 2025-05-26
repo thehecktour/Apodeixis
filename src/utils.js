@@ -1,6 +1,12 @@
-export function createListItem({ name, score }) {
+export function createListItem({ name, score }, position) {
   const li = document.createElement("li");
-  li.textContent = `${name}: ${score}`;
+
+  let medal = "";
+  if (position === 0) medal = "🥇 ";
+  else if (position === 1) medal = "🥈 ";
+  else if (position === 2) medal = "🥉 ";
+
+  li.textContent = `${medal}${name}: ${score}`;
 
   li.addEventListener("click", () => {
     li.classList.add("fade-out");
